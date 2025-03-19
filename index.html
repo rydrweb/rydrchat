@@ -144,94 +144,63 @@
     </div>
 
     <script>
-        // Function to generate a random 3-digit number
-        function generateRandomNumber() {
-            return Math.floor(100 + Math.random() * 900);
-        }
+  // Firebase Configuration
+  const firebaseConfig = {
+      apiKey: "AIzaSyDCr6Pax1AN7Z8_0mwD7fNCtnKJQlr3bWY",
+      authDomain: "rydrchat.firebaseapp.com",
+      databaseURL: "https://rydrchat-default-rtdb.firebaseio.com",
+      projectId: "rydrchat",
+      storageBucket: "rydrchat.appspot.com",  // Fixed this
+      messagingSenderId: "994801762986",
+      appId: "1:994801762986:web:9d91897e77b0887d7946d3",
+      measurementId: "G-5ZWWFPXRKQ"
+  };
 
-        // Check if user ID exists in local storage
-        let userId = localStorage.getItem('userId');
-        if (!userId) {
-            // Generate a new user ID and store it in local storage
-            userId = generateRandomNumber();
-            localStorage.setItem('userId', userId);
-        }
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database().ref("messages");
 
-        let messages = [];
-        let deletedMessages = [];
+  // Generate or retrieve user ID
+  function generateRandomNumber() {
+      return Math.floor(100 + Math.random() * 900);
+  }
 
-        function sendMessage() {
-            const messageInput = document.getElementById('message-input');
-            const messageText = messageInput.value.trim();
-            if (messageText !== '') {
-                const messageElement = document.createElement('div');
-                messageElement.textContent = `User ${userId}: ${messageText}`;
-                document.getElementById('chat-messages').appendChild(messageElement);
-                messages.push(messageElement);
-                messageInput.value = '';
-                messageInput.focus();
-                // Scroll to the bottom of the chat messages
-                const chatMessages = document.getElementById('chat-messages');
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-        }
+  let userId = localStorage.getItem('userId');
+  if (!userId) {
+      userId = generateRandomNumber();
+      localStorage.setItem('userId', userId);
+  }
 
-        function unsendMessage() {
-            if (messages.length > 0) {
-                const lastMessage = messages.pop();
-                deletedMessages.push(lastMessage);
-                lastMessage.remove();
-            }
-        }
+  // Send Message Function
+  function sendMessage() {
+      const messageInput = document.getElementById('message-input');
+      const messageText = messageInput.value.trim();
+      if (messageText !== '') {
+          db.push({ user: userId, text: messageText });
+          messageInput.value = '';  // Clear input after sending
+      }
+  }
 
-        function resendMessage() {
-            if (deletedMessages.length > 0) {
-                const lastDeletedMessage = deletedMessages.pop();
-                document.getElementById('chat-messages').appendChild(lastDeletedMessage);
-                messages.push(lastDeletedMessage);
-                // Scroll to the bottom of the chat messages
-                const chatMessages = document.getElementById('chat-messages');
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-        }
+  // Display Messages in Real-Time
+  db.on("child_added", (snapshot) => {
+      const data = snapshot.val();
+      const messageElement = document.createElement('div');
+      messageElement.textContent = `User ${data.user}: ${data.text}`;
+      document.getElementById('chat-messages').appendChild(messageElement);
 
-        function handleKeyDown(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        }
+      // Auto-scroll to the latest message
+      const chatMessages = document.getElementById('chat-messages');
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+  });
 
-      const firebaseConfig = {
-  apiKey: "AIzaSyDCr6Pax1AN7Z8_0mwD7fNCtnKJQlr3bWY",
-  authDomain: "rydrchat.firebaseapp.com",
-  databaseURL: "https://rydrchat-default-rtdb.firebaseio.com",
-  projectId: "rydrchat",
-  storageBucket: "rydrchat.firebasestorage.app",
-  messagingSenderId: "994801762986",
-  appId: "1:994801762986:web:9d91897e77b0887d7946d3",
-  measurementId: "G-5ZWWFPXRKQ"
-};
+  // Enter Key to Send
+  function handleKeyDown(event) {
+      if (event.key === 'Enter') {
+          sendMessage();
+      }
+  }
+</script>
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database().ref("messages");
-
-function sendMessage() {
-    const messageInput = document.getElementById('message-input');
-    const messageText = messageInput.value.trim();
-    if (messageText !== '') {
-        db.push({ user: userId, text: messageText });
-        messageInput.value = '';
-    }
-}
-
-db.on("child_added", (snapshot) => {
-    const data = snapshot.val();
-    const messageElement = document.createElement('div');
-    messageElement.textContent = `User ${data.user}: ${data.text}`;
-    document.getElementById('chat-messages').appendChild(messageElement);
-});
-
-    </script>
 </body>
 
 </html>
