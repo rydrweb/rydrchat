@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js"></script>
     <title>rydrchat</title>
     <style>
         body {
@@ -198,6 +200,37 @@
                 sendMessage();
             }
         }
+
+      const firebaseConfig = {
+  apiKey: "AIzaSyDCr6Pax1AN7Z8_0mwD7fNCtnKJQlr3bWY",
+  authDomain: "rydrchat.firebaseapp.com",
+  databaseURL: "https://rydrchat-default-rtdb.firebaseio.com",
+  projectId: "rydrchat",
+  storageBucket: "rydrchat.firebasestorage.app",
+  messagingSenderId: "994801762986",
+  appId: "1:994801762986:web:9d91897e77b0887d7946d3",
+  measurementId: "G-5ZWWFPXRKQ"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database().ref("messages");
+
+function sendMessage() {
+    const messageInput = document.getElementById('message-input');
+    const messageText = messageInput.value.trim();
+    if (messageText !== '') {
+        db.push({ user: userId, text: messageText });
+        messageInput.value = '';
+    }
+}
+
+db.on("child_added", (snapshot) => {
+    const data = snapshot.val();
+    const messageElement = document.createElement('div');
+    messageElement.textContent = `User ${data.user}: ${data.text}`;
+    document.getElementById('chat-messages').appendChild(messageElement);
+});
+
     </script>
 </body>
 
